@@ -72,6 +72,15 @@ class Transcription(BaseModel):
             segments=[Segment.from_proto(segment) for segment in obj.segments],
         )
 
+    def format(self, format: str, **kwargs):
+        if format == "json":
+            return self.output_json(**kwargs)
+        elif format == "text":
+            return self.output_text(delimiter=kwargs.get("delimiter", "\n"))
+        elif format == "srt":
+            return self.output_srt(**kwargs)
+        raise ValueError(f"Unsupported format: {format}")
+
     def output_json(
         self,
         *,

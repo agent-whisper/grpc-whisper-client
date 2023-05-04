@@ -1,12 +1,7 @@
-import grpc
-import json
 import click
-import asyncio
 
 from src.logger import logger
 from src.client.app import grpcWhisperClient
-from src.generated.service_pb2 import TranscriptionRequest, TranscriptionResponse
-from src.generated.service_pb2_grpc import TranscriptionServiceStub
 
 
 @click.command()
@@ -20,21 +15,23 @@ from src.generated.service_pb2_grpc import TranscriptionServiceStub
     default=None,
     help="File location to save the output as json file. If omitted, will print the result in stdout instead.",
 )
+@click.option(
+    "--format",
+    "-f",
+    default="json",
+    type=click.Choice(["json", "srt", "text"]),
+    help="How the transcription result should be outputted.",
+)
 @click.option("--secure-port", is_flag=True, default=False)
-def command(audio_file, server, output_file, secure_port):
-    send_file(audio_file, server, output_file, secure_port)
-
-
-def send_file(audio_file: str, server: str, output_file: str, secure_port: bool):
+def command(audio_file, server, output_file, format, secure_port):
     client = grpcWhisperClient(server)
     transcription = client.transcribe(audio_file)
 
     if output_file:
-        with open(output_file, "w") as f:
-            json.dump(transcription.dict(), f, indent=4)
+        transcription.format(format, output_dir=output_file)
         logger.info(f"Response saved to {output_file}")
     else:
-        logger.info(f"Response:\n{json.dumps(transcription.dict(), indent=4)}.")
+        logger.info(f"Response:\n{transcription.format(format)}.")
 
 
 if __name__ == "__main__":
