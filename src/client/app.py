@@ -12,7 +12,13 @@ class grpcWhisperClient:
     stub: TranscriptionServiceStub
 
     def __init__(self, address: str):
-        self.channel = grpc.insecure_channel(address)
+        self.channel = grpc.insecure_channel(
+            address,
+            options=[
+                ("grpc.max_send_message_length", 5000000),
+                ("grpc.max_receive_message_length", 5000000),
+            ],
+        )
         self.stub = TranscriptionServiceStub(self.channel)
 
     def __del__(self):
