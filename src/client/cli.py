@@ -15,17 +15,19 @@ from src.client.app import grpcWhisperClient
     default=None,
     help="File location to save the output as json file. If omitted, will print the result in stdout instead.",
 )
+@click.option("--language", default="en", show_default=True, help="The audio language.")
 @click.option(
     "--format",
     "-f",
     default="json",
+    show_default=True,
     type=click.Choice(["json", "srt", "text"]),
     help="How the transcription result should be outputted.",
 )
 @click.option("--secure-port", is_flag=True, default=False)
-def command(audio_file, server, output_file, format, secure_port):
+def command(audio_file, server, output_file, format, language, secure_port):
     client = grpcWhisperClient(server)
-    transcription = client.transcribe(audio_file)
+    transcription = client.transcribe(audio_file, opt={"language": language})
 
     if output_file:
         transcription.format(format, output_dir=output_file)
